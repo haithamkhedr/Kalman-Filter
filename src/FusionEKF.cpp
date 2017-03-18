@@ -21,7 +21,6 @@ FusionEKF::FusionEKF() {
     R_laser_ = MatrixXd(2, 2);
     R_radar_ = MatrixXd(3, 3);
     H_laser_ = MatrixXd(2, 4);
-    Hj_ = MatrixXd(3, 4);
 
     //measurement covariance matrix - laser
     R_laser_ << 0.0225, 0,
@@ -46,15 +45,6 @@ TODO:
     ekf_.Q_ = Eigen::MatrixXd(4,4);
     ekf_.H_ = Eigen::MatrixXd(2,4);
     ekf_.H_ = H_laser_;
-    ekf_.P_ << 1 , 0 , 0, 0,
-               0 , 1 , 0, 0,
-               0 , 0 , 10 , 0,
-               0 , 0 , 0 , 10;
-
-    ekf_.F_ << 1 , 0 , 1 , 0,
-               0 , 1 , 0 , 1,
-               0 , 0 , 1 , 0,
-               0 , 0 , 0 , 1;
 }
 
 /**
@@ -77,6 +67,15 @@ TODO:
          */
         // first measurement
         cout << "EKF: " << endl;
+        ekf_.P_ << 1 , 0 , 0, 0,
+            0 , 1 , 0, 0,
+            0 , 0 , 1000 , 0,
+            0 , 0 , 0 , 1000;
+
+        ekf_.F_ << 1 , 0 , 1 , 0,
+            0 , 1 , 0 , 1,
+            0 , 0 , 1 , 0,
+            0 , 0 , 0 , 1;
         ekf_.x_ = VectorXd(4);
         ekf_.x_(2) = 0;
         ekf_.x_(3) = 0;
@@ -121,10 +120,10 @@ TODO:
      * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
      */
 
-    long dt = (measurement_pack.timestamp_ - previous_timestamp_)/1e6;
-    long dt_2 = dt * dt;
-    long dt_3 = dt_2 * dt;
-    long dt_4 = dt_3 * dt;
+    float dt = (measurement_pack.timestamp_ - previous_timestamp_)/1e6;
+    float dt_2 = dt * dt;
+    float dt_3 = dt_2 * dt;
+    float dt_4 = dt_3 * dt;
     previous_timestamp_ = measurement_pack.timestamp_;
 
     long noise_ax = 9;
@@ -133,10 +132,10 @@ TODO:
     ekf_.F_(0,2) = dt;
     ekf_.F_(1,3) = dt;
     ekf_.Q_ <<  dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
-			   0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
-			   dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
-			   0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
-    
+        0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
+        dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
+        0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
+
     ekf_.Predict();
 
     /*****************************************************************************

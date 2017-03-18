@@ -29,5 +29,6 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 TODO:
      * Calculate a Jacobian here.
      */
+
     return Eigen::MatrixXd(2,2);
 }
